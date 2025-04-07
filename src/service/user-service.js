@@ -6,21 +6,30 @@ import { v4 as uuid } from "uuid";
 import jwt from "jsonwebtoken";
 import { ResponseError } from "../error/response-error.js";
 
-const register = async (request) => {
 
-    const user = validate(registerUserValidation, request);
+const register = async (body) => {
 
+    const user = validate(registerUserValidation, body);
 
-    const checkUser = await prismaClient.user.findUnique({
+    const existingUser = await prismaClient.user.findUnique({
         where: { email: user.email }
     });
 
-    if (checkUser) {
-        throw new ResponseError(400, "User already exists");
+    if (existingUser) {
+        throw new ResponseError(400, "Email already exists");
     }
 
+    const existingUserByPhone = await prismaClient.user.findUnique({
+        where: { phone_number: user.phone_number }
+    });
+
+    if (existingUserByPhone) {
+        throw new ResponseError(400, "Phone number already exists");
+    }
 
     user.user_id = uuid();
+
+
     user.password = await bcrypt.hash(user.password, 10);
 
     return prismaClient.user.create({
@@ -31,7 +40,8 @@ const register = async (request) => {
             email: true,
             phone_number: true,
             address: true,
-            role: true
+            role: true,
+            profile_picture: true
         }
     });
 };
@@ -56,6 +66,7 @@ const login = async (request) => {
     const token = jwt.sign({ user_id: checkUser.user_id, email: checkUser.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
 
     return {
+        success: true,
         message: "Login success",
         token: token
     }
@@ -74,6 +85,7 @@ const getUser = async (request) => {
             email: true,
             phone_number: true,
             address: true,
+            profile_picture: true,
             role: true
         }
     });
@@ -82,7 +94,11 @@ const getUser = async (request) => {
         throw new ResponseError(404, "User not found");
     }
 
-    return checkUser;
+    return {
+        success: true,
+        message: "User found",
+        data: checkUser
+    };
 }
 
 const updateUser = async (request, userIdFromToken) => {
@@ -120,9 +136,19 @@ const updateUser = async (request, userIdFromToken) => {
     const updatedData = Object.assign({}, checkUser, user, { user_id: userIdFromToken });
 
 
+    // return prismaClient.user.update({
+    //     where: { user_id: userIdFromToken },
+    //     data: updatedData,
+    //     select: {
+    //         user_id: true,
+    //         name: true,
+    //         email: true,
+    //         phone_number: true,
+    //         address: true,
+    //     }
+    // });
 
-
-    return prismaClient.user.update({
+    const updatedUser = await prismaClient.user.update({
         where: { user_id: userIdFromToken },
         data: updatedData,
         select: {
@@ -131,10 +157,17 @@ const updateUser = async (request, userIdFromToken) => {
             email: true,
             phone_number: true,
             address: true,
+            profile_picture: true,
+            role: true
         }
     });
-};
 
+    return {
+        success: true,
+        message: "User updated successfully",
+        data: updatedUser
+    };
+};
 
 
 export default { register, login, getUser, updateUser };

@@ -6,6 +6,7 @@ import { apiRouter } from "../router/api-router.js";
 export const web = express();
 
 web.use(express.json());
+web.use("/uploads", express.static("uploads"));
 web.use(publicRouter)
 web.use(apiRouter)
 web.use(errorMiddleware)
