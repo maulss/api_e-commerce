@@ -1,5 +1,5 @@
 import { prismaClient } from "../application/database.js";
-import { getUserValidation, loginUserValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
+import { changePasswordValidation, getUserValidation, loginUserValidation, registerUserValidation, updateUserValidation } from "../validation/user-validation.js";
 import { validate } from "../validation/validation.js";
 import bcrypt from "bcrypt";
 import { v4 as uuid } from "uuid";
@@ -94,10 +94,17 @@ const getUser = async (request) => {
         throw new ResponseError(404, "User not found");
     }
 
+    const baseUrl = process.env.BASE_URL
+
     return {
         success: true,
         message: "User found",
-        data: checkUser
+        data: {
+            ...checkUser,
+            profile_picture: checkUser.profile_picture
+                ? `${baseUrl}${checkUser.profile_picture}`
+                : null
+        }
     };
 }
 
@@ -135,18 +142,7 @@ const updateUser = async (request, userIdFromToken) => {
 
     const updatedData = Object.assign({}, checkUser, user, { user_id: userIdFromToken });
 
-
-    // return prismaClient.user.update({
-    //     where: { user_id: userIdFromToken },
-    //     data: updatedData,
-    //     select: {
-    //         user_id: true,
-    //         name: true,
-    //         email: true,
-    //         phone_number: true,
-    //         address: true,
-    //     }
-    // });
+    const baseUrl = process.env.BASE_URL
 
     const updatedUser = await prismaClient.user.update({
         where: { user_id: userIdFromToken },
@@ -165,9 +161,43 @@ const updateUser = async (request, userIdFromToken) => {
     return {
         success: true,
         message: "User updated successfully",
-        data: updatedUser
+        data: {
+            ...updatedUser,
+            profile_picture: updatedUser.profile_picture
+                ? `${baseUrl}${updatedUser.profile_picture}`
+                : null
+        }
+    };
+};
+
+const changePassword = async (request, userIdFromToken) => {
+    const { old_password, new_password } = validate(changePasswordValidation, request);
+
+    const user = await prismaClient.user.findUnique({
+        where: { user_id: userIdFromToken },
+    });
+
+    if (!user) {
+        throw new ResponseError(404, "User not found");
+    }
+
+    const isMatch = await bcrypt.compare(old_password, user.password);
+    if (!isMatch) {
+        throw new ResponseError(400, "Old password is incorrect");
+    }
+
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    await prismaClient.user.update({
+        where: { user_id: userIdFromToken },
+        data: { password: hashedPassword }
+    });
+
+    return {
+        success: true,
+        message: "Password changed successfully"
     };
 };
 
 
-export default { register, login, getUser, updateUser };
+export default { register, login, getUser, updateUser, changePassword };

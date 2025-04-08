@@ -28,4 +28,9 @@ const updateUserValidation = Joi.object({
     profile_picture: Joi.string().optional(),
 })
 
-export { registerUserValidation, loginUserValidation, getUserValidation, updateUserValidation };
+const changePasswordValidation = Joi.object({
+    old_password: Joi.string().required(),
+    new_password: Joi.string().max(100).required(),
+});
+
+export { registerUserValidation, loginUserValidation, getUserValidation, updateUserValidation, changePasswordValidation };

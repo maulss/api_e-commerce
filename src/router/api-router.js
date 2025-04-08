@@ -6,6 +6,7 @@ import { upload } from "../middleware/upload_middleware.js";
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
 apiRouter.get("/api/users/current", userController.getUser);
-apiRouter.patch("/api/users/current", upload.single("profile_picture"), userController.updateUser);
+apiRouter.patch("/api/users/update", upload.single("profile_picture"), userController.updateUser);
+apiRouter.patch("/api/users/change-password", userController.changePassword);
 
 export { apiRouter };

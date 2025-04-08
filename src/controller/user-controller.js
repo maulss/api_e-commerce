@@ -53,6 +53,15 @@ const updateUser = async (req, res, next) => {
     }
 };
 
+const changePassword = async (req, res, next) => {
+    try {
+        const result = await userService.changePassword(req.body, req.user.user_id);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export default {
-    register, login, getUser, updateUser
+    register, login, getUser, updateUser, changePassword
 }
