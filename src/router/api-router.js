@@ -4,6 +4,7 @@ import userController from "../controller/user-controller.js";
 import productController from "../controller/product_controller.js";
 import { uploadWithPrefix } from "../middleware/upload_middleware.js";
 import { isAdmin } from "../middleware/admin-middleware.js";
+import categoryController from "../controller/category-controller.js";
 
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
@@ -35,7 +36,9 @@ apiRouter.put(
     uploadWithPrefix("product").single("image_url"),
     productController.updateProduct
 );
-
 apiRouter.delete("/api/products/:productId", isAdmin, productController.deleteProduct);
+
+//categories
+apiRouter.post("/api/categories/create", isAdmin, categoryController.createCategory);
 
 export { apiRouter };

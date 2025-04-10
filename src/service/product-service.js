@@ -17,15 +17,6 @@ const createProduct = async (body) => {
     }
 
 
-    if (!product.created_by_id) {
-        throw new ResponseError(400, "created_by_id is required");
-    }
-
-    if (!product.category_id) {
-        throw new ResponseError(400, "category_id is required");
-    }
-
-
     const newProduct = await prismaClient.product.create({
         data: {
             product_id: uuid(),
