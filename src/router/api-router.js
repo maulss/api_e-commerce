@@ -42,6 +42,7 @@ apiRouter.delete("/api/products/:productId", isAdmin, productController.deletePr
 apiRouter.post("/api/categories/create", isAdmin, categoryController.createCategory);
 apiRouter.get("/api/categories", categoryController.getListCategory);
 apiRouter.put("/api/categories/:categoryId", isAdmin, categoryController.updateCategory);
+apiRouter.delete("/api/categories/:categoryId", isAdmin, categoryController.deleteCategory);
 
 
 export { apiRouter };

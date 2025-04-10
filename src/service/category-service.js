@@ -112,6 +112,25 @@ const updateCategory = async (categoryId, data) => {
     };
 };
 
+const deleteCategory = async (categoryId) => {
+    const existingCategory = await prismaClient.category.findUnique({
+        where: { category_id: categoryId },
+    });
+
+    if (!existingCategory) {
+        throw new ResponseError(404, "Category not found");
+    }
+
+    await prismaClient.category.delete({
+        where: { category_id: categoryId },
+    });
+
+    return {
+        success: true,
+        message: "Category deleted successfully",
+    };
+}
+
 export default {
-    createCategory, getListCategory, updateCategory,
+    createCategory, getListCategory, updateCategory, deleteCategory
 }
