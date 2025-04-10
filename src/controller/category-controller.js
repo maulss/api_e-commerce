@@ -20,6 +20,17 @@ const getListCategory = async (req, res, next) => {
     }
 }
 
+const updateCategory = async (req, res, next) => {
+    try {
+        const categoryId = req.params.categoryId;
+        const body = req.body;
+        const result = await categoryService.updateCategory(categoryId, body);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
 export default {
-    createCategory, getListCategory
+    createCategory, getListCategory, updateCategory
 }

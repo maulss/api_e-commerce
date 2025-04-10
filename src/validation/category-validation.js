@@ -6,4 +6,9 @@ const createCategoryValidation = Joi.object({
     category_id: Joi.string().required()
 });
 
-export { createCategoryValidation };
+const updateCategoryValidation = Joi.object({
+    name: Joi.string().max(100).optional(),
+    description: Joi.string().max(255).optional()
+});
+
+export { createCategoryValidation, updateCategoryValidation };
