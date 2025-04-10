@@ -1,5 +1,5 @@
 import { v4 as uuid } from "uuid";
-import { createProductValidation } from "../validation/product-validation.js";
+import { createProductValidation, updateProductValidation } from "../validation/product-validation.js";
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../error/response-error.js";
 import { validate } from "../validation/validation.js";
@@ -56,4 +56,140 @@ const createProduct = async (body) => {
     };
 };
 
-export default { createProduct };
+
+const getListProduct = async (query) => {
+    const page = parseInt(query.page) || 1;
+    const pageSize = parseInt(query.pageSize) || 10;
+    const search = query.search || "";
+
+    const skip = (page - 1) * pageSize;
+
+    const [products, total] = await Promise.all([
+        prismaClient.product.findMany({
+            where: {
+                name: {
+                    contains: search,
+
+                },
+            },
+            skip: skip,
+            take: pageSize,
+            orderBy: {
+                name: "asc",
+            },
+            select: {
+                product_id: true,
+                name: true,
+                description: true,
+                price: true,
+                stock: true,
+                image_url: true,
+                category_id: true,
+                created_by_id: true
+            }
+        }),
+        prismaClient.product.count({
+            where: {
+                name: {
+                    contains: search,
+                },
+            },
+        })
+    ]);
+
+    return {
+        success: true,
+        message: "List product fetched successfully",
+        data: {
+            products,
+            total,
+            page,
+            pageSize
+        }
+    };
+};
+
+const getProductById = async (productId) => {
+    const product = await prismaClient.product.findUnique({
+        where: {
+            product_id: productId,
+        },
+        select: {
+            product_id: true,
+            name: true,
+            description: true,
+            price: true,
+            stock: true,
+            image_url: true,
+            category_id: true,
+            created_by_id: true,
+        },
+    });
+
+    if (!product) {
+        throw new ResponseError(404, "Product not found");
+    }
+
+    return {
+        success: true,
+        message: "Product retrieved successfully",
+        data: product,
+    };
+};
+
+const updateProduct = async (productId, body) => {
+
+    const product = validate(updateProductValidation, body);
+
+    const existingProduct = await prismaClient.product.findUnique({
+        where: { product_id: productId },
+    });
+
+    if (!existingProduct) {
+        throw new ResponseError(404, "Product not found");
+    }
+
+    const updatedProduct = await prismaClient.product.update({
+        where: { product_id: productId },
+        data: product,
+        select: {
+            product_id: true,
+            name: true,
+            description: true,
+            price: true,
+            stock: true,
+            image_url: true,
+            category_id: true,
+            created_by_id: true
+        }
+    });
+
+    return {
+        success: true,
+        message: "Product updated successfully",
+        data: updatedProduct
+    };
+};
+
+const deleteProduct = async (productId) => {
+    const existingProduct = await prismaClient.product.findUnique({
+        where: { product_id: productId },
+    });
+
+    if (!existingProduct) {
+        throw new ResponseError(404, "Product not found");
+    }
+
+    await prismaClient.product.delete({
+        where: { product_id: productId },
+    });
+
+    return {
+        success: true,
+        message: "Product deleted successfully",
+    };
+};
+
+
+
+export default { createProduct, getListProduct, getProductById, updateProduct, deleteProduct };

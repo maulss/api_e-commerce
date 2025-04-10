@@ -27,4 +27,15 @@ apiRouter.post(
     productController.createProduct
 );
 
+apiRouter.get("/api/products", productController.getListProduct);
+apiRouter.get("/api/products/:productId", productController.getProductById);
+apiRouter.put(
+    "/api/products/:productId",
+    isAdmin,
+    uploadWithPrefix("product").single("image_url"),
+    productController.updateProduct
+);
+
+apiRouter.delete("/api/products/:productId", isAdmin, productController.deleteProduct);
+
 export { apiRouter };
