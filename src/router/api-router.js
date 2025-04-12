@@ -5,6 +5,7 @@ import productController from "../controller/product_controller.js";
 import { uploadWithPrefix } from "../middleware/upload_middleware.js";
 import { isAdmin } from "../middleware/admin-middleware.js";
 import categoryController from "../controller/category-controller.js";
+import bannerController from "../controller/banner_controller.js";
 
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
@@ -43,6 +44,22 @@ apiRouter.post("/api/categories/create", isAdmin, categoryController.createCateg
 apiRouter.get("/api/categories", categoryController.getListCategory);
 apiRouter.put("/api/categories/:categoryId", isAdmin, categoryController.updateCategory);
 apiRouter.delete("/api/categories/:categoryId", isAdmin, categoryController.deleteCategory);
+
+//banners
+apiRouter.post(
+    "/api/banners/create",
+    isAdmin,
+    uploadWithPrefix("banner").single("image_url"),
+    bannerController.createBanner
+);
+apiRouter.get("/api/banners", bannerController.getAllBanners);
+apiRouter.put(
+    "/api/banners/:id",
+    isAdmin,
+    uploadWithPrefix("banner").single("image_url"),
+    bannerController.updateBanner
+);
+apiRouter.delete("/api/banners/:id", isAdmin, bannerController.deleteBanner);
 
 
 export { apiRouter };

@@ -25,6 +25,7 @@ model User {
   profile_picture String? @db.Text  
 
   products        Product[]  @relation("UserProducts")
+  banners         Banner[]   @relation("UserBanners")
 
   @@map("users")
 }
@@ -53,6 +54,17 @@ model Product {
   created_by     User     @relation("UserProducts", fields: [created_by_id], references: [user_id])
 
   @@map("products")
+}
+
+model Banner {
+  banner_id   String  @id @default(uuid()) @db.VarChar(100)
+  title       String  @db.VarChar(100)
+  image_url   String  @db.Text
+  created_by  String
+
+  user        User    @relation("UserBanners", fields: [created_by], references: [user_id])
+
+  @@map("banners")
 }
 
 
