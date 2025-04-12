@@ -18,11 +18,13 @@ const createCategory = async (data) => {
         data: {
             category_id: category.category_id,
             name: category.name,
+            image_url: category.image_url,
             description: category.description,
         },
         select: {
             category_id: true,
             name: true,
+            image_url: true,
             description: true,
         }
     });
@@ -56,6 +58,7 @@ const getListCategory = async (query) => {
             select: {
                 category_id: true,
                 name: true,
+                image_url: true,
                 description: true,
             }
         }),
@@ -94,14 +97,12 @@ const updateCategory = async (categoryId, data) => {
 
     const updatedCategory = await prismaClient.category.update({
         where: { category_id: categoryId },
-        data: {
-            name: categoryData.name,
-            description: categoryData.description,
-        },
+        data: categoryData,
         select: {
             category_id: true,
             name: true,
             description: true,
+            image_url: true,
         },
     });
 

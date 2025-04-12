@@ -40,9 +40,9 @@ apiRouter.put(
 apiRouter.delete("/api/products/:productId", isAdmin, productController.deleteProduct);
 
 //categories
-apiRouter.post("/api/categories/create", isAdmin, categoryController.createCategory);
+apiRouter.post("/api/categories/create", isAdmin, uploadWithPrefix("category").single("image_url"), categoryController.createCategory,);
 apiRouter.get("/api/categories", categoryController.getListCategory);
-apiRouter.put("/api/categories/:categoryId", isAdmin, categoryController.updateCategory);
+apiRouter.put("/api/categories/:categoryId", isAdmin, uploadWithPrefix("category").single("image_url"), categoryController.updateCategory);
 apiRouter.delete("/api/categories/:categoryId", isAdmin, categoryController.deleteCategory);
 
 //banners

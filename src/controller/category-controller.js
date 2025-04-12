@@ -3,6 +3,9 @@ import categoryService from "../service/category-service.js";
 const createCategory = async (req, res, next) => {
     try {
         const body = req.body;
+        if (req.file) {
+            body.image_url = `/uploads/${req.file.filename}`;
+        }
         const data = await categoryService.createCategory(body);
         res.status(201).json(data);
 
@@ -24,6 +27,9 @@ const updateCategory = async (req, res, next) => {
     try {
         const categoryId = req.params.categoryId;
         const body = req.body;
+        if (req.file) {
+            body.image_url = `/uploads/${req.file.filename}`;
+        }
         const result = await categoryService.updateCategory(categoryId, body);
         res.status(200).json(result);
     } catch (error) {
