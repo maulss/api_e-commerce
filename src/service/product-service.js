@@ -48,14 +48,23 @@ const getListProduct = async (query) => {
 
     const skip = (page - 1) * pageSize;
 
-    const [products, total] = await Promise.all([
-        prismaClient.product.findMany({
-            where: {
-                name: {
-                    contains: search,
 
-                },
-            },
+    const isFeaturedParam = query.isFeatured;
+
+
+    const whereClause = {
+        name: {
+            contains: search,
+        },
+    };
+
+    if (isFeaturedParam !== undefined) {
+        whereClause.isFeatured = isFeaturedParam === 'true';
+    }
+
+    const [productsRaw, total] = await Promise.all([
+        prismaClient.product.findMany({
+            where: whereClause,
             skip: skip,
             take: pageSize,
             orderBy: {
@@ -75,13 +84,18 @@ const getListProduct = async (query) => {
             }
         }),
         prismaClient.product.count({
-            where: {
-                name: {
-                    contains: search,
-                },
-            },
+            where: whereClause
         })
     ]);
+
+    const baseUrl = process.env.BASE_URL;
+
+    const products = productsRaw.map((product) => ({
+        ...product,
+        image_url: product.image_url
+            ? `${baseUrl}${product.image_url}`
+            : null,
+    }));
 
     return {
         success: true,
@@ -94,6 +108,7 @@ const getListProduct = async (query) => {
         }
     };
 };
+
 
 const getProductById = async (productId) => {
     const product = await prismaClient.product.findUnique({

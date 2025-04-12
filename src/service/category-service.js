@@ -43,7 +43,8 @@ const getListCategory = async (query) => {
 
     const skip = (page - 1) * pageSize;
 
-    const [categories, total] = await Promise.all([
+
+    const [categoriesRaw, total] = await Promise.all([
         prismaClient.category.findMany({
             where: {
                 name: {
@@ -66,11 +67,20 @@ const getListCategory = async (query) => {
             where: {
                 name: {
                     contains: search,
-
                 }
             }
         })
     ]);
+
+    const baseUrl = process.env.BASE_URL;
+
+
+    const categories = categoriesRaw.map((category) => ({
+        ...category,
+        image_url: category.image_url
+            ? `${baseUrl}${category.image_url}`
+            : null,
+    }));
 
     return {
         success: true,
@@ -82,7 +92,8 @@ const getListCategory = async (query) => {
             pageSize
         },
     };
-}
+};
+
 
 const updateCategory = async (categoryId, data) => {
     const categoryData = validate(updateCategoryValidation, data);

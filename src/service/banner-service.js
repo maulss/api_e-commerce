@@ -40,11 +40,17 @@ const createBanner = async (body) => {
 const getAllBanners = async () => {
     try {
         const banners = await prismaClient.banner.findMany();
+        const baseUrl = process.env.BASE_URL || "";
+
+        const data = banners.map((banner) => ({
+            ...banner,
+            image_url: banner.image_url ? `${baseUrl}${banner.image_url}` : null,
+        }));
 
         return {
             success: true,
             message: "Banners retrieved successfully",
-            data: banners,
+            data: data,
         };
     } catch (error) {
         throw new ResponseError(500, "Failed to retrieve banners");
