@@ -6,6 +6,8 @@ const createProductValidation = Joi.object({
     price: Joi.number().positive().required(),
     stock: Joi.number().integer().min(0).required(),
     image_url: Joi.string().optional(),
+    isFeatured: Joi.boolean().required(),
+    isNew: Joi.boolean().required(),
     category_id: Joi.string().required(),
     created_by_id: Joi.string().required()
 });
@@ -16,6 +18,8 @@ const updateProductValidation = Joi.object({
     price: Joi.number().positive().optional(),
     stock: Joi.number().integer().min(0).optional(),
     image_url: Joi.string().optional(),
+    isFeatured: Joi.boolean().required(),
+    isNew: Joi.boolean().required(),
     category_id: Joi.string().optional()
 });
 

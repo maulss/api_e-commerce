@@ -18,16 +18,7 @@ const createProduct = async (body) => {
 
 
     const newProduct = await prismaClient.product.create({
-        data: {
-            product_id: uuid(),
-            name: product.name,
-            description: product.description,
-            price: product.price,
-            stock: product.stock,
-            image_url: product.image_url,
-            category_id: product.category_id,
-            created_by_id: product.created_by_id
-        },
+        data: product,
         select: {
             product_id: true,
             name: true,
@@ -35,6 +26,8 @@ const createProduct = async (body) => {
             price: true,
             stock: true,
             image_url: true,
+            isFeatured: true,
+            isNew: true,
             category_id: true,
             created_by_id: true
         }
@@ -75,6 +68,8 @@ const getListProduct = async (query) => {
                 price: true,
                 stock: true,
                 image_url: true,
+                isFeatured: true,
+                isNew: true,
                 category_id: true,
                 created_by_id: true
             }
@@ -112,6 +107,8 @@ const getProductById = async (productId) => {
             price: true,
             stock: true,
             image_url: true,
+            isFeatured: true,
+            isNew: true,
             category_id: true,
             created_by_id: true,
         },
@@ -150,6 +147,8 @@ const updateProduct = async (productId, body) => {
             price: true,
             stock: true,
             image_url: true,
+            isFeatured: true,
+            isNew: true,
             category_id: true,
             created_by_id: true
         }

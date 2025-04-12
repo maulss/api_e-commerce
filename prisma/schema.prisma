@@ -48,6 +48,8 @@ model Product {
   price          Int
   stock          Int
   image_url      String?  @db.Text
+  isFeatured     Boolean
+  isNew          Boolean
   category_id    String
   created_by_id  String
 
