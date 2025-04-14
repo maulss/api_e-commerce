@@ -1,7 +1,7 @@
 import { prismaClient } from "../application/database.js";
 import { validate } from "../validation/validation.js";
 import { ResponseError } from "../error/response-error.js";
-import { createOrderValidation } from "../validation/order-validation.js";
+import { cancelOrderValidation, createOrderValidation, updateOrderStatusValidation } from "../validation/order-validation.js";
 
 const createOrder = async (user_id) => {
     validate(createOrderValidation, { user_id });
@@ -101,10 +101,132 @@ const getOrderDetail = async (order_id, user_id) => {
         throw new ResponseError(404, "Order not found");
     }
 
-    return order;
+    return {
+        success: true,
+        message: "Order retrieved successfully",
+        data: order,
+    };
+};
+
+// const updateOrderStatus = async (order_id, status) => {
+//     validate(updateOrderStatusValidation, { status });
+
+//     const existing = await prismaClient.order.findUnique({
+//         where: { order_id }
+//     });
+
+//     if (!existing) {
+//         throw new ResponseError(404, "Order not found");
+//     }
+
+//     const updated = await prismaClient.order.update({
+//         where: { order_id },
+//         data: { status }
+//     });
+
+//     return {
+//         success: true,
+//         message: "Order status updated successfully",
+//         data: updated,
+//     };
+// };
+
+const updateOrderStatus = async (order_id, status) => {
+    validate(updateOrderStatusValidation, { status });
+
+    const existing = await prisma.order.findUnique({
+        where: { order_id }
+    });
+
+    if (!existing) {
+        throw new ResponseError(404, "Order not found");
+    }
+
+    // Jika status diubah menjadi "cancelled", kembalikan stok produk
+    if (status === "cancelled") {
+        // Update stok produk
+        for (const item of existing.order_items) {
+            await prisma.product.update({
+                where: { product_id: item.product_id },
+                data: { stock: { increment: item.quantity } }
+            });
+        }
+    }
+
+    const updated = await prisma.order.update({
+        where: { order_id },
+        data: { status }
+    });
+
+    return {
+        success: true,
+        message: "Order status updated successfully",
+        data: updated,
+    };
+};
+
+// const cancelOrder = async (order_id, user_id) => {
+//     validate(cancelOrderValidation, { order_id, user_id });
+
+//     const existingOrder = await prismaClient.order.findFirst({
+//         where: { order_id, user_id }
+//     });
+
+//     if (!existingOrder) {
+//         throw new ResponseError(404, "Order not found");
+//     }
+
+//     if (existingOrder.status !== "waiting_payment") {
+//         throw new ResponseError(400, "Only orders with status 'waiting_payment' can be cancelled");
+//     }
+
+//     await prismaClient.order.update({
+//         where: { order_id },
+//         data: { status: "cancelled" }
+//     });
+
+//     return {
+//         success: true,
+//         message: "Order cancelled successfully"
+//     };
+// };
+
+const cancelOrder = async (order_id, user_id) => {
+    validate(cancelOrderValidation, { order_id, user_id });
+
+    const existingOrder = await prismaClient.order.findFirst({
+        where: { order_id, user_id }
+    });
+
+    if (!existingOrder) {
+        throw new ResponseError(404, "Order not found");
+    }
+
+    if (existingOrder.status !== "waiting_payment") {
+        throw new ResponseError(400, "Only orders with status 'waiting_payment' can be cancelled");
+    }
+
+    // Mengembalikan stok produk jika status dibatalkan
+    for (const item of existingOrder.order_items) {
+        await prismaClient.product.update({
+            where: { product_id: item.product_id },
+            data: { stock: { increment: item.quantity } }
+        });
+    }
+
+    // Update status pesanan menjadi "cancelled"
+    await prismaClient.order.update({
+        where: { order_id },
+        data: { status: "cancelled" }
+    });
+
+    return {
+        success: true,
+        message: "Order cancelled successfully"
+    };
 };
 
 
 export default {
-    createOrder, getUserOrders, getOrderDetail
+    createOrder, getUserOrders, getOrderDetail, updateOrderStatus, cancelOrder
 }

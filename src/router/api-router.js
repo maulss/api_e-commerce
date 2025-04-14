@@ -75,6 +75,8 @@ apiRouter.delete("/api/carts/clear", cartController.deleteCart);
 apiRouter.post("/api/orders/create", orderController.createOrder);
 apiRouter.get("/api/orders", orderController.getUserOrders);
 apiRouter.get("/api/orders/:orderId", orderController.getOrderDetail);
+apiRouter.put("/api/orders/:id/status", isAdmin, orderController.updateOrderStatus);
+apiRouter.patch("/api/orders/:id/cancel", orderController.cancelOrder);
 
 
 export { apiRouter };
