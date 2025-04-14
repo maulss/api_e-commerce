@@ -55,16 +55,20 @@ const getCart = async (user_id) => {
     const total_quantity = items.reduce((acc, item) => acc + item.quantity, 0);
 
     return {
-        cart_id: `cart-${user_id}`,
-        user_id,
-        items: items.map(item => ({
-            cart_item_id: item.cart_item_id,
-            quantity: item.quantity,
-            product: item.product,
-            total_price: item.quantity * item.product.price
-        })),
-        total_price,
-        total_quantity
+        success: true,
+        message: "Cart retrieved successfully",
+        data: {
+            cart_id: `cart-${user_id}`,
+            user_id,
+            items: items.map(item => ({
+                cart_item_id: item.cart_item_id,
+                quantity: item.quantity,
+                product: item.product,
+                total_price: item.quantity * item.product.price
+            })),
+            total_price,
+            total_quantity
+        }
     };
 };
 

@@ -52,9 +52,59 @@ const createOrder = async (user_id) => {
         where: { user_id }
     });
 
+    return {
+        success: true,
+        message: "Order created successfully",
+        data: order,
+    }
+};
+
+
+const getUserOrders = async (user_id) => {
+    const orders = await prismaClient.order.findMany({
+        where: { user_id },
+        include: {
+            order_items: {
+                include: {
+                    product: true
+                }
+            }
+        },
+        orderBy: {
+            created_at: 'desc'
+        }
+    });
+
+    return {
+        success: true,
+        message: "Orders retrieved successfully",
+        data: orders,
+    };
+};
+
+const getOrderDetail = async (order_id, user_id) => {
+    const order = await prismaClient.order.findFirst({
+        where: {
+            order_id,
+            user_id
+        },
+        include: {
+            order_items: {
+                include: {
+                    product: true
+                }
+            }
+        }
+    });
+
+    if (!order) {
+        throw new ResponseError(404, "Order not found");
+    }
+
     return order;
 };
 
+
 export default {
-    createOrder,
+    createOrder, getUserOrders, getOrderDetail
 }

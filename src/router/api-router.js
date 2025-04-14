@@ -73,6 +73,8 @@ apiRouter.delete("/api/carts/clear", cartController.deleteCart);
 
 //orders
 apiRouter.post("/api/orders/create", orderController.createOrder);
+apiRouter.get("/api/orders", orderController.getUserOrders);
+apiRouter.get("/api/orders/:orderId", orderController.getOrderDetail);
 
 
 export { apiRouter };
