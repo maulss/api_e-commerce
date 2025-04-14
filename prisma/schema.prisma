@@ -26,7 +26,8 @@ model User {
 
   products         Product[]  @relation("UserProducts")
   banners          Banner[]   @relation("UserBanners")
-  cartItems        CartItem[] // langsung relasi ke CartItem
+  cartItems        CartItem[] 
+  orders           Order[]
 
   @@map("users")
 }
@@ -57,6 +58,7 @@ model Product {
   category       Category    @relation(fields: [category_id], references: [category_id])
   created_by     User        @relation("UserProducts", fields: [created_by_id], references: [user_id])
   cartItems      CartItem[]  @relation("ProductCartItems")
+  order_items    OrderItem[]
 
   @@map("products")
 }
@@ -82,6 +84,33 @@ model CartItem {
   product      Product  @relation("ProductCartItems", fields: [product_id], references: [product_id])
 
   @@map("cart_items")
+}
+
+model Order {
+  order_id     String       @id @default(uuid()) @db.VarChar(100)
+  user_id      String       @db.VarChar(100)
+  total_price  Int
+  status       String       @default("waiting_payment")
+  created_at   DateTime     @default(now())
+
+  user         User         @relation(fields: [user_id], references: [user_id])
+  order_items  OrderItem[]
+
+  @@map("orders")
+}
+
+
+model OrderItem {
+  order_item_id String   @id @default(uuid()) @db.VarChar(100)
+  order_id      String   @db.VarChar(100)
+  product_id    String   @db.VarChar(100)
+  quantity      Int
+  price         Int       // harga satuan saat transaksi
+
+  order         Order     @relation(fields: [order_id], references: [order_id])
+  product       Product   @relation(fields: [product_id], references: [product_id])
+
+  @@map("order_items")
 }
 
 

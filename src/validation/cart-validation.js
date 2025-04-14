@@ -11,7 +11,13 @@ const getCartValidation = Joi.object({
     user_id: Joi.string().required()
 });
 
+const updateCartItemValidation = Joi.object({
+    quantity: Joi.number().integer().min(1).required(),
+    user_id: Joi.string().required()
+});
+
+
 
 export {
-    addItemToCartValidation, getCartValidation
+    addItemToCartValidation, getCartValidation, updateCartItemValidation
 }

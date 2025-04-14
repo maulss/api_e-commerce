@@ -7,6 +7,7 @@ import { isAdmin } from "../middleware/admin-middleware.js";
 import categoryController from "../controller/category-controller.js";
 import bannerController from "../controller/banner_controller.js";
 import cartController from "../controller/cart-controller.js";
+import orderController from "../controller/order-controller.js";
 
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
@@ -65,6 +66,13 @@ apiRouter.delete("/api/banners/:id", isAdmin, bannerController.deleteBanner);
 //carts
 apiRouter.post("/api/carts/add", cartController.addItemToCart);
 apiRouter.get("/api/carts", cartController.getCart);
+apiRouter.put("/api/carts/items/:id", cartController.updateCartItem);
+apiRouter.delete("/api/carts/items/:id", cartController.deleteCartItem);
+apiRouter.delete("/api/carts/clear", cartController.deleteCart);
+
+
+//orders
+apiRouter.post("/api/orders/create", orderController.createOrder);
 
 
 export { apiRouter };

@@ -1,5 +1,5 @@
 import { ResponseError } from "../error/response-error.js";
-import { addItemToCartValidation, getCartValidation } from "../validation/cart-validation.js";
+import { addItemToCartValidation, getCartValidation, updateCartItemValidation } from "../validation/cart-validation.js";
 import { validate } from "../validation/validation.js";
 import { prismaClient } from "../application/database.js";
 
@@ -68,6 +68,58 @@ const getCart = async (user_id) => {
     };
 };
 
+const updateCartItem = async (cart_item_id, { user_id, quantity }) => {
+    validate(updateCartItemValidation, { user_id, quantity });
+
+    const cartItem = await prismaClient.cartItem.findUnique({
+        where: { cart_item_id }
+    });
+
+    if (!cartItem || cartItem.user_id !== user_id) {
+        throw new ResponseError(404, "Cart item not found");
+    }
+
+    await prismaClient.cartItem.update({
+        where: { cart_item_id },
+        data: { quantity }
+    });
+
+    return {
+        success: true,
+        message: "Cart item updated"
+    };
+};
+
+const deleteCartItem = async (cart_item_id, user_id) => {
+    const cartItem = await prismaClient.cartItem.findUnique({
+        where: { cart_item_id }
+    });
+
+    if (!cartItem || cartItem.user_id !== user_id) {
+        throw new ResponseError(404, "Cart item not found");
+    }
+
+    await prismaClient.cartItem.delete({
+        where: { cart_item_id }
+    });
+
+    return {
+        success: true,
+        message: "Cart item deleted"
+    };
+};
+
+const deleteCart = async (user_id) => {
+    await prismaClient.cartItem.deleteMany({
+        where: { user_id }
+    });
+
+    return {
+        success: true,
+        message: "Cart cleared"
+    };
+};
+
 export default {
-    addItemToCart, getCart
+    addItemToCart, getCart, updateCartItem, deleteCartItem, deleteCart
 };
