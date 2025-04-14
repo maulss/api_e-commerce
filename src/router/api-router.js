@@ -6,6 +6,7 @@ import { uploadWithPrefix } from "../middleware/upload_middleware.js";
 import { isAdmin } from "../middleware/admin-middleware.js";
 import categoryController from "../controller/category-controller.js";
 import bannerController from "../controller/banner_controller.js";
+import cartController from "../controller/cart-controller.js";
 
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
@@ -60,6 +61,10 @@ apiRouter.put(
     bannerController.updateBanner
 );
 apiRouter.delete("/api/banners/:id", isAdmin, bannerController.deleteBanner);
+
+//carts
+apiRouter.post("/api/carts/add", cartController.addItemToCart);
+apiRouter.get("/api/carts", cartController.getCart);
 
 
 export { apiRouter };

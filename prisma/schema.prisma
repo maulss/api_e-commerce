@@ -15,59 +15,73 @@ datasource db {
 
 
 model User {
-  user_id       String  @id @default(uuid()) @db.VarChar(100)
-  name          String? @db.VarChar(100)
-  email         String  @unique @db.VarChar(100)
-  password      String  @db.VarChar(100)
-  phone_number  String  @unique @db.VarChar(100)
-  address       String? @db.VarChar(100)
-  role          String  @default("user")
-  profile_picture String? @db.Text  
+  user_id          String     @id @default(uuid()) @db.VarChar(100)
+  name             String?    @db.VarChar(100)
+  email            String     @unique @db.VarChar(100)
+  password         String     @db.VarChar(100)
+  phone_number     String     @unique @db.VarChar(100)
+  address          String?    @db.VarChar(100)
+  role             String     @default("user")
+  profile_picture  String?    @db.Text
 
-  products        Product[]  @relation("UserProducts")
-  banners         Banner[]   @relation("UserBanners")
+  products         Product[]  @relation("UserProducts")
+  banners          Banner[]   @relation("UserBanners")
+  cartItems        CartItem[] // langsung relasi ke CartItem
 
   @@map("users")
 }
 
 model Category {
-  category_id String   @id @default(uuid()) @db.VarChar(100)
-  name        String   @unique @db.VarChar(100)
-  image_url      String?  @db.Text
-  description String?  @db.Text
+  category_id   String     @id @default(uuid()) @db.VarChar(100)
+  name          String     @unique @db.VarChar(100)
+  image_url     String?    @db.Text
+  description   String?    @db.Text
 
-  products    Product[]
+  products      Product[]
 
   @@map("categories")
 }
 
 model Product {
-  product_id     String   @id @default(uuid()) @db.VarChar(100)
-  name           String   @db.VarChar(100)
-  description    String?  @db.Text
+  product_id     String      @id @default(uuid()) @db.VarChar(100)
+  name           String      @db.VarChar(100)
+  description    String?     @db.Text
   price          Int
   stock          Int
-  image_url      String?  @db.Text
+  image_url      String?     @db.Text
   isFeatured     Boolean
   isNew          Boolean
   category_id    String
   created_by_id  String
 
-  category       Category @relation(fields: [category_id], references: [category_id])
-  created_by     User     @relation("UserProducts", fields: [created_by_id], references: [user_id])
+  category       Category    @relation(fields: [category_id], references: [category_id])
+  created_by     User        @relation("UserProducts", fields: [created_by_id], references: [user_id])
+  cartItems      CartItem[]  @relation("ProductCartItems")
 
   @@map("products")
 }
 
 model Banner {
-  banner_id   String  @id @default(uuid()) @db.VarChar(100)
-  title       String  @db.VarChar(100)
-  image_url   String  @db.Text
+  banner_id   String   @id @default(uuid()) @db.VarChar(100)
+  title       String   @db.VarChar(100)
+  image_url   String   @db.Text
   created_by  String
 
-  user        User    @relation("UserBanners", fields: [created_by], references: [user_id])
+  user        User     @relation("UserBanners", fields: [created_by], references: [user_id])
 
   @@map("banners")
+}
+
+model CartItem {
+  cart_item_id String   @id @default(uuid()) @db.VarChar(100)
+  user_id      String
+  product_id   String
+  quantity     Int
+
+  user         User     @relation(fields: [user_id], references: [user_id])
+  product      Product  @relation("ProductCartItems", fields: [product_id], references: [product_id])
+
+  @@map("cart_items")
 }
 
 
