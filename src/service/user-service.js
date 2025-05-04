@@ -69,7 +69,7 @@ const login = async (request) => {
         throw new ResponseError(404, "Invalid email or password");
     }
 
-    const token = jwt.sign({ user_id: checkUser.user_id, email: checkUser.email }, process.env.JWT_SECRET, { expiresIn: "1h" });
+    const token = jwt.sign({ user_id: checkUser.user_id, email: checkUser.email }, process.env.JWT_SECRET, { expiresIn: "12h" });
 
     return {
         success: true,

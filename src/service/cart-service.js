@@ -63,7 +63,12 @@ const getCart = async (user_id) => {
             items: items.map(item => ({
                 cart_item_id: item.cart_item_id,
                 quantity: item.quantity,
-                product: item.product,
+                product: {
+                    ...item.product,
+                    image_url: item.product.image_url
+                        ? `${process.env.BASE_URL}${item.product.image_url}`
+                        : null
+                },
                 total_price: item.quantity * item.product.price
             })),
             total_price,
@@ -72,15 +77,47 @@ const getCart = async (user_id) => {
     };
 };
 
+// const updateCartItem = async (cart_item_id, { user_id, quantity }) => {
+//     validate(updateCartItemValidation, { user_id, quantity });
+
+//     const cartItem = await prismaClient.cartItem.findUnique({
+//         where: { cart_item_id }
+//     });
+
+//     if (!cartItem || cartItem.user_id !== user_id) {
+//         throw new ResponseError(404, "Cart item not found");
+//     }
+
+//     await prismaClient.cartItem.update({
+//         where: { cart_item_id },
+//         data: { quantity }
+//     });
+
+//     return {
+//         success: true,
+//         message: "Cart item updated"
+//     };
+// };
+
 const updateCartItem = async (cart_item_id, { user_id, quantity }) => {
     validate(updateCartItemValidation, { user_id, quantity });
 
     const cartItem = await prismaClient.cartItem.findUnique({
-        where: { cart_item_id }
+        where: { cart_item_id },
+        include: { product: true }
     });
 
     if (!cartItem || cartItem.user_id !== user_id) {
         throw new ResponseError(404, "Cart item not found");
+    }
+
+    if (!cartItem.product) {
+        throw new ResponseError(404, "Product not found");
+    }
+
+
+    if (quantity > cartItem.product.stock) {
+        throw new ResponseError(400, `Quantity exceeds available stock (${cartItem.product.stock})`);
     }
 
     await prismaClient.cartItem.update({
@@ -93,6 +130,7 @@ const updateCartItem = async (cart_item_id, { user_id, quantity }) => {
         message: "Cart item updated"
     };
 };
+
 
 const deleteCartItem = async (cart_item_id, user_id) => {
     const cartItem = await prismaClient.cartItem.findUnique({

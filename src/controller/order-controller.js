@@ -14,12 +14,14 @@ const createOrder = async (req, res, next) => {
 const getUserOrders = async (req, res, next) => {
     try {
         const user_id = req.user.user_id;
-        const orders = await orderService.getUserOrders(user_id);
+        const status = req.query.status;
+        const orders = await orderService.getUserOrders(user_id, status);
+
         res.json(orders);
     } catch (error) {
         next(error);
     }
-};
+}
 
 const getOrderDetail = async (req, res, next) => {
     try {

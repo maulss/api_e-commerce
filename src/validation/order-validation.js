@@ -7,9 +7,7 @@ const createOrderValidation = Joi.object({
 const updateOrderStatusValidation = Joi.object({
     status: Joi.string().valid(
         "waiting_payment",
-        "processing",
-        "shipped",
-        "delivered",
+        "paid",
         "cancelled"
     ).required()
 });
@@ -24,3 +22,4 @@ const cancelOrderValidation = Joi.object({
 export {
     createOrderValidation, updateOrderStatusValidation, cancelOrderValidation
 }
+

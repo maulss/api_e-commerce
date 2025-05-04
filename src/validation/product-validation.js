@@ -18,8 +18,8 @@ const updateProductValidation = Joi.object({
     price: Joi.number().positive().optional(),
     stock: Joi.number().integer().min(0).optional(),
     image_url: Joi.string().optional(),
-    isFeatured: Joi.boolean().required(),
-    isNew: Joi.boolean().required(),
+    isFeatured: Joi.boolean().optional(),
+    isNew: Joi.boolean().optional(),
     category_id: Joi.string().optional()
 });
 

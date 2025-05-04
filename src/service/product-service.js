@@ -41,16 +41,16 @@ const createProduct = async (body) => {
 };
 
 
+
+
 const getListProduct = async (query) => {
     const page = parseInt(query.page) || 1;
     const pageSize = parseInt(query.pageSize) || 10;
     const search = query.search || "";
-
     const skip = (page - 1) * pageSize;
 
-
     const isFeaturedParam = query.isFeatured;
-
+    const categoryIdParam = query.categoryId;
 
     const whereClause = {
         name: {
@@ -60,6 +60,10 @@ const getListProduct = async (query) => {
 
     if (isFeaturedParam !== undefined) {
         whereClause.isFeatured = isFeaturedParam === 'true';
+    }
+
+    if (categoryIdParam !== undefined) {
+        whereClause.category_id = categoryIdParam;
     }
 
     const [productsRaw, total] = await Promise.all([
@@ -110,6 +114,7 @@ const getListProduct = async (query) => {
 };
 
 
+
 const getProductById = async (productId) => {
     const product = await prismaClient.product.findUnique({
         where: {
@@ -136,7 +141,12 @@ const getProductById = async (productId) => {
     return {
         success: true,
         message: "Product retrieved successfully",
-        data: product,
+        data: {
+            ...product,
+            image_url: product.image_url
+                ? `${process.env.BASE_URL}${product.image_url}`
+                : null,
+        },
     };
 };
 

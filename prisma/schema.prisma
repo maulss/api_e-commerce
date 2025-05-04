@@ -112,5 +112,3 @@ model OrderItem {
 
   @@map("order_items")
 }
-
-

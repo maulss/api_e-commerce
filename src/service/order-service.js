@@ -60,9 +60,15 @@ const createOrder = async (user_id) => {
 };
 
 
-const getUserOrders = async (user_id) => {
+const getUserOrders = async (user_id, status) => {
+    const whereClause = { user_id };
+
+    if (status) {
+        whereClause.status = status;
+    }
+
     const orders = await prismaClient.order.findMany({
-        where: { user_id },
+        where: whereClause,
         include: {
             order_items: {
                 include: {
@@ -75,12 +81,30 @@ const getUserOrders = async (user_id) => {
         }
     });
 
+    const url = process.env.BASE_URL;
+
+    const modifiedOrders = orders.map(order => ({
+        ...order,
+        order_items: order.order_items.map(item => ({
+            ...item,
+            product: {
+                ...item.product,
+                image_url: item.product.image_url
+                    ? `${url}${item.product.image_url}`
+                    : null
+            }
+        }))
+    }));
+
     return {
         success: true,
         message: "Orders retrieved successfully",
-        data: orders,
+        data: modifiedOrders,
     };
 };
+
+
+
 
 const getOrderDetail = async (order_id, user_id) => {
     const order = await prismaClient.order.findFirst({
@@ -101,12 +125,29 @@ const getOrderDetail = async (order_id, user_id) => {
         throw new ResponseError(404, "Order not found");
     }
 
+    const url = process.env.BASE_URL;
+
+    // Modify image_url for each order item
+    const modifiedOrder = {
+        ...order,
+        order_items: order.order_items.map(item => ({
+            ...item,
+            product: {
+                ...item.product,
+                image_url: item.product.image_url
+                    ? `${url}${item.product.image_url}`
+                    : null
+            }
+        }))
+    };
+
     return {
         success: true,
         message: "Order retrieved successfully",
-        data: order,
+        data: modifiedOrder,
     };
 };
+
 
 // const updateOrderStatus = async (order_id, status) => {
 //     validate(updateOrderStatusValidation, { status });

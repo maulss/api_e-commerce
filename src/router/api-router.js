@@ -7,7 +7,10 @@ import { isAdmin } from "../middleware/admin-middleware.js";
 import categoryController from "../controller/category-controller.js";
 import bannerController from "../controller/banner_controller.js";
 import cartController from "../controller/cart-controller.js";
+// import orderController from "../controller/order2-controller.js";
+import paymentController from "../controller/payment_controller.js";
 import orderController from "../controller/order-controller.js";
+
 
 const apiRouter = express.Router();
 apiRouter.use(authMiddleware)
@@ -23,7 +26,7 @@ apiRouter.patch(
 apiRouter.patch("/api/users/change-password", userController.changePassword);
 
 //products
-// apiRouter.post("/api/products/create", isAdmin, productController.createProduct);
+// apiRouter.post("/api/products/create", isAdmin, productController.create
 apiRouter.post(
     "/api/products/create",
     isAdmin,
@@ -70,13 +73,18 @@ apiRouter.put("/api/carts/items/:id", cartController.updateCartItem);
 apiRouter.delete("/api/carts/items/:id", cartController.deleteCartItem);
 apiRouter.delete("/api/carts/clear", cartController.deleteCart);
 
-
 //orders
 apiRouter.post("/api/orders/create", orderController.createOrder);
 apiRouter.get("/api/orders", orderController.getUserOrders);
 apiRouter.get("/api/orders/:orderId", orderController.getOrderDetail);
 apiRouter.put("/api/orders/:id/status", isAdmin, orderController.updateOrderStatus);
 apiRouter.patch("/api/orders/:id/cancel", orderController.cancelOrder);
+
+//payments
+apiRouter.post("/api/payments/:order_id", paymentController.createPayment);
+
+
+
 
 
 export { apiRouter };
