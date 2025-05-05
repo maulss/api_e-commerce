@@ -99,6 +99,7 @@ const handleMidtransNotification = async (notification) => {
 
         let newStatus = order.status;
 
+        // Handle status changes based on the transaction status
         if (transactionStatus === 'capture') {
             newStatus = 'paid';
         } else if (transactionStatus === 'settlement') {
@@ -109,6 +110,20 @@ const handleMidtransNotification = async (notification) => {
             transactionStatus === 'expire' ||
             transactionStatus === 'cancel') {
             newStatus = 'failed';
+
+            // Add logic to restore stock for "failed" orders
+            const orderItems = await prismaClient.orderItem.findMany({
+                where: { order_id: orderId },
+                include: { product: true }
+            });
+
+            // Loop through all items in the order and restore the stock
+            for (const item of orderItems) {
+                await prismaClient.product.update({
+                    where: { product_id: item.product_id },
+                    data: { stock: { increment: item.quantity } }
+                });
+            }
         }
 
         if (newStatus !== order.status) {
@@ -118,11 +133,6 @@ const handleMidtransNotification = async (notification) => {
             });
 
             if (newStatus === 'completed') {
-                const orderItems = await prismaClient.orderItem.findMany({
-                    where: { order_id: orderId },
-                    include: { product: true }
-                });
-
                 for (const item of orderItems) {
                     await prismaClient.product.update({
                         where: { product_id: item.product_id },
@@ -143,6 +153,7 @@ const handleMidtransNotification = async (notification) => {
         throw error;
     }
 };
+
 
 const getPaymentStatus = async (orderId) => {
     try {

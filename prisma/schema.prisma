@@ -92,7 +92,8 @@ model Order {
   total_price    Int
   status         String   @default("waiting_payment")
   created_at     DateTime @default(now())
-  payment_url    String?  @db.Text // <-- Field baru untuk menyimpan URL pembayaran
+  payment_url    String?  @db.Text 
+  payment_method  String?  @db.VarChar(100)
 
   user           User     @relation(fields: [user_id], references: [user_id])
   order_items    OrderItem[]
