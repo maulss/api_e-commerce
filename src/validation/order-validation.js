@@ -7,8 +7,8 @@ const createOrderValidation = Joi.object({
 const updateOrderStatusValidation = Joi.object({
     status: Joi.string().valid(
         "waiting_payment",
-        "paid",
-        "cancelled"
+        "completed",
+        "failed"
     ).required()
 });
 

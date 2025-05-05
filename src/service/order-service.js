@@ -149,29 +149,6 @@ const getOrderDetail = async (order_id, user_id) => {
 };
 
 
-// const updateOrderStatus = async (order_id, status) => {
-//     validate(updateOrderStatusValidation, { status });
-
-//     const existing = await prismaClient.order.findUnique({
-//         where: { order_id }
-//     });
-
-//     if (!existing) {
-//         throw new ResponseError(404, "Order not found");
-//     }
-
-//     const updated = await prismaClient.order.update({
-//         where: { order_id },
-//         data: { status }
-//     });
-
-//     return {
-//         success: true,
-//         message: "Order status updated successfully",
-//         data: updated,
-//     };
-// };
-
 const updateOrderStatus = async (order_id, status) => {
     validate(updateOrderStatusValidation, { status });
 
@@ -183,9 +160,8 @@ const updateOrderStatus = async (order_id, status) => {
         throw new ResponseError(404, "Order not found");
     }
 
-    // Jika status diubah menjadi "cancelled", kembalikan stok produk
     if (status === "cancelled") {
-        // Update stok produk
+
         for (const item of existing.order_items) {
             await prisma.product.update({
                 where: { product_id: item.product_id },
@@ -206,37 +182,17 @@ const updateOrderStatus = async (order_id, status) => {
     };
 };
 
-// const cancelOrder = async (order_id, user_id) => {
-//     validate(cancelOrderValidation, { order_id, user_id });
 
-//     const existingOrder = await prismaClient.order.findFirst({
-//         where: { order_id, user_id }
-//     });
-
-//     if (!existingOrder) {
-//         throw new ResponseError(404, "Order not found");
-//     }
-
-//     if (existingOrder.status !== "waiting_payment") {
-//         throw new ResponseError(400, "Only orders with status 'waiting_payment' can be cancelled");
-//     }
-
-//     await prismaClient.order.update({
-//         where: { order_id },
-//         data: { status: "cancelled" }
-//     });
-
-//     return {
-//         success: true,
-//         message: "Order cancelled successfully"
-//     };
-// };
 
 const cancelOrder = async (order_id, user_id) => {
     validate(cancelOrderValidation, { order_id, user_id });
 
+
     const existingOrder = await prismaClient.order.findFirst({
-        where: { order_id, user_id }
+        where: { order_id, user_id },
+        include: {
+            order_items: true
+        }
     });
 
     if (!existingOrder) {
@@ -247,18 +203,22 @@ const cancelOrder = async (order_id, user_id) => {
         throw new ResponseError(400, "Only orders with status 'waiting_payment' can be cancelled");
     }
 
-    // Mengembalikan stok produk jika status dibatalkan
-    for (const item of existingOrder.order_items) {
-        await prismaClient.product.update({
-            where: { product_id: item.product_id },
-            data: { stock: { increment: item.quantity } }
-        });
+
+    if (Array.isArray(existingOrder.order_items)) {
+        for (const item of existingOrder.order_items) {
+            await prismaClient.product.update({
+                where: { product_id: item.product_id },
+                data: { stock: { increment: item.quantity } }
+            });
+        }
+    } else {
+        throw new ResponseError(400, "Order items are not available");
     }
 
-    // Update status pesanan menjadi "cancelled"
+
     await prismaClient.order.update({
         where: { order_id },
-        data: { status: "cancelled" }
+        data: { status: "failed" }
     });
 
     return {
@@ -266,6 +226,7 @@ const cancelOrder = async (order_id, user_id) => {
         message: "Order cancelled successfully"
     };
 };
+
 
 
 export default {

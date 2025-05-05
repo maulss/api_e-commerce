@@ -55,6 +55,12 @@ const createPaymentTransaction = async (order_id) => {
         };
         const snapResponse = await midtrans.createTransaction(snapRequest);
 
+        // Simpan URL pembayaran pada order
+        await prismaClient.order.update({
+            where: { order_id },
+            data: { payment_url: snapResponse.redirect_url } // <-- Simpan URL pembayaran
+        });
+
         return {
             paymentDetails: snapResponse,
             orderId: order_id
@@ -163,5 +169,22 @@ const getPaymentStatus = async (orderId) => {
     }
 };
 
+const getPaymentUrl = async (order_id) => {
+    if (!order_id) {
+        throw new ResponseError(400, "Order ID is required");
+    }
 
-export default { createPaymentTransaction, handleMidtransNotification, getPaymentStatus };
+    const order = await prismaClient.order.findUnique({
+        where: { order_id },
+        select: { payment_url: true, order_id: true }
+    });
+
+    if (!order) {
+        throw new ResponseError(404, "Order not found");
+    }
+
+    return order; // Mengembalikan data order yang berisi URL pembayaran
+};
+
+
+export default { createPaymentTransaction, handleMidtransNotification, getPaymentStatus, getPaymentUrl };

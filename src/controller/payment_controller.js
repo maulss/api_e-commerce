@@ -68,5 +68,25 @@ const checkPaymentStatus = async (req, res, next) => {
     }
 };
 
+const getPaymentUrl = async (req, res, next) => {
+    try {
+        const { order_id } = req.params;
 
-export default { createPayment, handleNotification, checkPaymentStatus };
+        // Memanggil service untuk mendapatkan URL pembayaran
+        const order = await paymentService.getPaymentUrl(order_id);
+
+        res.json({
+            success: true,
+            message: "Payment URL retrieved successfully",
+            data: {
+                order_id: order.order_id,
+                payment_url: order.payment_url
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+
+export default { createPayment, handleNotification, checkPaymentStatus, getPaymentUrl };
