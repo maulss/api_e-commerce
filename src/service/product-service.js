@@ -1,4 +1,4 @@
-import { v4 as uuid } from "uuid";
+
 import { createProductValidation, updateProductValidation } from "../validation/product-validation.js";
 import { prismaClient } from "../application/database.js";
 import { ResponseError } from "../error/response-error.js";

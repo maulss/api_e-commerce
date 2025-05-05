@@ -5,6 +5,6 @@ import paymentController from "../controller/payment_controller.js";
 const publicRouter = express.Router();
 publicRouter.post("/api/users/register", userController.register);
 publicRouter.post("/api/users/login", userController.login);
-// publicRouter.post("/api/payments/callback", paymentController.paymentCallback);
+publicRouter.post("/api/payments/notification", paymentController.handleNotification);
 
 export { publicRouter };

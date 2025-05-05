@@ -82,6 +82,7 @@ apiRouter.patch("/api/orders/:id/cancel", orderController.cancelOrder);
 
 //payments
 apiRouter.post("/api/payments/:order_id", paymentController.createPayment);
+apiRouter.get("/api/payments/status/:orderId", paymentController.checkPaymentStatus);
 
 
 
