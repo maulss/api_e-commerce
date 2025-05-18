@@ -23,16 +23,17 @@ const getUserOrders = async (req, res, next) => {
     }
 }
 
-const getOrderDetail = async (req, res, next) => {
+const getOrderById = async (req, res, next) => {
     try {
-        const user_id = req.user.user_id;
-        const order_id = req.params.id;
-        const order = await orderService.getOrderDetail(order_id, user_id);
-        res.json(order);
+        const order_id = req.params.orderId;
+        const order = await orderService.getOrderById(order_id);
+        res.status(200).json(order);
     } catch (error) {
         next(error);
     }
-};
+}
+
+
 
 const updateOrderStatus = async (req, res, next) => {
     try {
@@ -57,5 +58,5 @@ const cancelOrder = async (req, res, next) => {
 };
 
 export default {
-    createOrder, getUserOrders, getOrderDetail, updateOrderStatus, cancelOrder
+    createOrder, getUserOrders, getOrderById, updateOrderStatus, cancelOrder
 }

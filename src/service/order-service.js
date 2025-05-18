@@ -104,14 +104,9 @@ const getUserOrders = async (user_id, status) => {
 };
 
 
-
-
-const getOrderDetail = async (order_id, user_id) => {
-    const order = await prismaClient.order.findFirst({
-        where: {
-            order_id,
-            user_id
-        },
+const getOrderById = async (orderId) => {
+    const order = await prismaClient.order.findUnique({
+        where: { order_id: orderId },
         include: {
             order_items: {
                 include: {
@@ -127,7 +122,6 @@ const getOrderDetail = async (order_id, user_id) => {
 
     const url = process.env.BASE_URL;
 
-    // Modify image_url for each order item
     const modifiedOrder = {
         ...order,
         order_items: order.order_items.map(item => ({
@@ -146,13 +140,14 @@ const getOrderDetail = async (order_id, user_id) => {
         message: "Order retrieved successfully",
         data: modifiedOrder,
     };
-};
+}
+
 
 
 const updateOrderStatus = async (order_id, status) => {
     validate(updateOrderStatusValidation, { status });
 
-    const existing = await prisma.order.findUnique({
+    const existing = await prismaClient.order.findUnique({
         where: { order_id }
     });
 
@@ -230,5 +225,5 @@ const cancelOrder = async (order_id, user_id) => {
 
 
 export default {
-    createOrder, getUserOrders, getOrderDetail, updateOrderStatus, cancelOrder
+    createOrder, getUserOrders, getOrderById, updateOrderStatus, cancelOrder
 }

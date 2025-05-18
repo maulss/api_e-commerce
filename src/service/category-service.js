@@ -38,7 +38,7 @@ const createCategory = async (data) => {
 
 const getListCategory = async (query) => {
     const page = parseInt(query.page) || 1;
-    const pageSize = parseInt(query.pageSize) || 10;
+    const pageSize = parseInt(query.pageSize) || 50;
     const search = query.search || "";
 
     const skip = (page - 1) * pageSize;
@@ -94,6 +94,35 @@ const getListCategory = async (query) => {
     };
 };
 
+const getCategoryById = async (categoryId) => {
+    const category = await prismaClient.category.findUnique({
+        where: { category_id: categoryId },
+        select: {
+            category_id: true,
+            name: true,
+            image_url: true,
+            description: true,
+        }
+    });
+
+    if (!category) {
+        throw new ResponseError(404, "Category not found");
+    }
+
+    const baseUrl = process.env.BASE_URL;
+
+    return {
+        success: true,
+        message: "Category retrieved successfully",
+        data: {
+            ...category,
+            image_url: category.image_url
+                ? `${baseUrl}${category.image_url}`
+                : null,
+        },
+    };
+}
+
 
 const updateCategory = async (categoryId, data) => {
     const categoryData = validate(updateCategoryValidation, data);
@@ -144,5 +173,5 @@ const deleteCategory = async (categoryId) => {
 }
 
 export default {
-    createCategory, getListCategory, updateCategory, deleteCategory
+    createCategory, getListCategory, updateCategory, deleteCategory, getCategoryById
 }

@@ -93,7 +93,8 @@ model Order {
   status         String   @default("waiting_payment")
   created_at     DateTime @default(now())
   payment_url    String?  @db.Text 
-  payment_method  String?  @db.VarChar(100)
+  transaction_hash String?  @db.VarChar(100)
+  contract_address String?  @db.VarChar(100)
 
   user           User     @relation(fields: [user_id], references: [user_id])
   order_items    OrderItem[]

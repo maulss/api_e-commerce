@@ -10,6 +10,7 @@ import cartController from "../controller/cart-controller.js";
 // import orderController from "../controller/order2-controller.js";
 import paymentController from "../controller/payment_controller.js";
 import orderController from "../controller/order-controller.js";
+import blockchainController from "../controller/blockchain-controller.js";
 
 
 const apiRouter = express.Router();
@@ -46,6 +47,7 @@ apiRouter.delete("/api/products/:productId", isAdmin, productController.deletePr
 
 //categories
 apiRouter.post("/api/categories/create", isAdmin, uploadWithPrefix("category").single("image_url"), categoryController.createCategory,);
+apiRouter.get("/api/categories/:categoryId", categoryController.getCategoryById);
 apiRouter.get("/api/categories", categoryController.getListCategory);
 apiRouter.put("/api/categories/:categoryId", isAdmin, uploadWithPrefix("category").single("image_url"), categoryController.updateCategory);
 apiRouter.delete("/api/categories/:categoryId", isAdmin, categoryController.deleteCategory);
@@ -76,7 +78,7 @@ apiRouter.delete("/api/carts/clear", cartController.deleteCart);
 //orders
 apiRouter.post("/api/orders/create", orderController.createOrder);
 apiRouter.get("/api/orders", orderController.getUserOrders);
-apiRouter.get("/api/orders/:orderId", orderController.getOrderDetail);
+apiRouter.get("/api/orders/:orderId", orderController.getOrderById);
 apiRouter.put("/api/orders/:id/status", isAdmin, orderController.updateOrderStatus);
 apiRouter.patch("/api/orders/:id/cancel", orderController.cancelOrder);
 
@@ -84,6 +86,12 @@ apiRouter.patch("/api/orders/:id/cancel", orderController.cancelOrder);
 apiRouter.post("/api/payments/:order_id", paymentController.createPayment);
 apiRouter.get("/api/payments/status/:orderId", paymentController.checkPaymentStatus);
 apiRouter.get("/api/payments/url/:order_id", paymentController.getPaymentUrl);
+
+
+//blockchain 
+apiRouter.get("/api/blockchain/transaction/:order_id", blockchainController.getBlockchainTransaction);
+
+
 
 
 

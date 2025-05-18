@@ -23,6 +23,16 @@ const getListCategory = async (req, res, next) => {
     }
 }
 
+const getCategoryById = async (req, res, next) => {
+    try {
+        const categoryId = req.params.categoryId;
+        const result = await categoryService.getCategoryById(categoryId);
+        res.status(200).json(result);
+    } catch (error) {
+        next(error);
+    }
+}
+
 const updateCategory = async (req, res, next) => {
     try {
         const categoryId = req.params.categoryId;
@@ -48,5 +58,5 @@ const deleteCategory = async (req, res, next) => {
 }
 
 export default {
-    createCategory, getListCategory, updateCategory, deleteCategory,
+    createCategory, getListCategory, updateCategory, deleteCategory, getCategoryById
 }

@@ -45,7 +45,7 @@ const createProduct = async (body) => {
 
 const getListProduct = async (query) => {
     const page = parseInt(query.page) || 1;
-    const pageSize = parseInt(query.pageSize) || 10;
+    const pageSize = parseInt(query.pageSize) || 50;
     const search = query.search || "";
     const skip = (page - 1) * pageSize;
 

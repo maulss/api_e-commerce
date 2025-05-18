@@ -1,6 +1,8 @@
 import { prismaClient } from "../application/database.js";
 import midtrans from "../application/midtrans.js";
 import { ResponseError } from "../error/response-error.js";
+import ContractService from "../blockchain/contractService.js";
+
 
 const createPaymentTransaction = async (order_id) => {
     if (!order_id) {
@@ -55,7 +57,7 @@ const createPaymentTransaction = async (order_id) => {
         };
         const snapResponse = await midtrans.createTransaction(snapRequest);
 
-        // Simpan URL pembayaran pada order
+
         await prismaClient.order.update({
             where: { order_id },
             data: { payment_url: snapResponse.redirect_url } // <-- Simpan URL pembayaran
@@ -83,7 +85,8 @@ const handleMidtransNotification = async (notification) => {
         }
 
         const order = await prismaClient.order.findUnique({
-            where: { order_id: orderId }
+            where: { order_id: orderId },
+            include: { user: true },
         });
 
         if (!order) {
@@ -99,29 +102,49 @@ const handleMidtransNotification = async (notification) => {
 
         let newStatus = order.status;
 
-        // Handle status changes based on the transaction status
         if (transactionStatus === 'capture') {
             newStatus = 'paid';
         } else if (transactionStatus === 'settlement') {
-            newStatus = 'completed';
+            if (order.status !== 'completed') {
+                newStatus = 'completed';
+
+
+                const customerEmail = notification.email || order.user?.email || 'unknown';
+                const customerName = order.user?.name || 'unknown';
+
+                const blockchainResult = await ContractService.storeTransaction(
+                    orderId,
+                    order.total_price,
+                    transactionStatus,
+                    notification.currency || 'IDR',
+                    notification.payment_type || 'unknown',
+                    customerEmail,
+                    'E-shop',
+                    customerName
+                );
+
+                await prismaClient.order.update({
+                    where: { order_id: orderId },
+                    data: {
+                        transaction_hash: blockchainResult.transactionHash,
+                        contract_address: process.env.CONTRACT_ADDRESS,
+                    },
+                });
+            }
         } else if (transactionStatus === 'pending') {
             newStatus = 'waiting_payment';
-        } else if (transactionStatus === 'deny' ||
-            transactionStatus === 'expire' ||
-            transactionStatus === 'cancel') {
+        } else if (['deny', 'expire', 'cancel'].includes(transactionStatus)) {
             newStatus = 'failed';
 
-            // Add logic to restore stock for "failed" orders
             const orderItems = await prismaClient.orderItem.findMany({
                 where: { order_id: orderId },
-                include: { product: true }
+                include: { product: true },
             });
 
-            // Loop through all items in the order and restore the stock
             for (const item of orderItems) {
                 await prismaClient.product.update({
                     where: { product_id: item.product_id },
-                    data: { stock: { increment: item.quantity } }
+                    data: { stock: { increment: item.quantity } },
                 });
             }
         }
@@ -129,14 +152,19 @@ const handleMidtransNotification = async (notification) => {
         if (newStatus !== order.status) {
             await prismaClient.order.update({
                 where: { order_id: orderId },
-                data: { status: newStatus }
+                data: { status: newStatus },
             });
 
             if (newStatus === 'completed') {
+                const orderItems = await prismaClient.orderItem.findMany({
+                    where: { order_id: orderId },
+                    include: { product: true },
+                });
+
                 for (const item of orderItems) {
                     await prismaClient.product.update({
                         where: { product_id: item.product_id },
-                        data: { stock: item.product.stock - item.quantity }
+                        data: { stock: item.product.stock - item.quantity },
                     });
                 }
             }
@@ -146,13 +174,14 @@ const handleMidtransNotification = async (notification) => {
             success: true,
             message: `Order ${orderId} status updated to ${newStatus}`,
             order_id: orderId,
-            status: newStatus
+            status: newStatus,
         };
     } catch (error) {
         console.error("Error handling Midtrans notification:", error);
         throw error;
     }
 };
+
 
 
 const getPaymentStatus = async (orderId) => {
