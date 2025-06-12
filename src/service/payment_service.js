@@ -160,20 +160,6 @@ const handleMidtransNotification = async (notification) => {
                 where: { order_id: orderId },
                 data: { status: newStatus },
             });
-
-            if (newStatus === 'completed') {
-                // const orderItems = await prismaClient.orderItem.findMany({
-                //     where: { order_id: orderId },
-                //     include: { product: true },
-                // });
-
-                // for (const item of orderItems) {
-                //     await prismaClient.product.update({
-                //         where: { product_id: item.product_id },
-                //         data: { stock: item.product.stock - item.quantity },
-                //     });
-                // }
-            }
         }
 
         return {
