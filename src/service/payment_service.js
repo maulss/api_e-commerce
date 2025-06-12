@@ -108,13 +108,19 @@ const handleMidtransNotification = async (notification) => {
             if (order.status !== 'completed') {
                 newStatus = 'completed';
 
-
                 const customerEmail = notification.email || order.user?.email || 'unknown';
                 const customerName = order.user?.name || 'unknown';
 
+                const paymentAmount = notification.gross_amount || order.total_price;
+
+                const amountToStore = parseInt(paymentAmount, 10);
+                if (isNaN(amountToStore)) {
+                    throw new Error(`Invalid amount value: ${paymentAmount}`);
+                }
+
                 const blockchainResult = await ContractService.storeTransaction(
                     orderId,
-                    order.total_price,
+                    amountToStore,
                     transactionStatus,
                     notification.currency || 'IDR',
                     notification.payment_type || 'unknown',
@@ -156,17 +162,17 @@ const handleMidtransNotification = async (notification) => {
             });
 
             if (newStatus === 'completed') {
-                const orderItems = await prismaClient.orderItem.findMany({
-                    where: { order_id: orderId },
-                    include: { product: true },
-                });
+                // const orderItems = await prismaClient.orderItem.findMany({
+                //     where: { order_id: orderId },
+                //     include: { product: true },
+                // });
 
-                for (const item of orderItems) {
-                    await prismaClient.product.update({
-                        where: { product_id: item.product_id },
-                        data: { stock: item.product.stock - item.quantity },
-                    });
-                }
+                // for (const item of orderItems) {
+                //     await prismaClient.product.update({
+                //         where: { product_id: item.product_id },
+                //         data: { stock: item.product.stock - item.quantity },
+                //     });
+                // }
             }
         }
 
@@ -181,6 +187,8 @@ const handleMidtransNotification = async (notification) => {
         throw error;
     }
 };
+
+
 
 
 
